@@ -4,10 +4,10 @@
 <div class="ui container">
     <h2 class="ui center aligned header">Đơn hàng của bạn</h2>
 
-    <div id="order_status_menu" class="ui blue three item menu">
-  <a href="{{url('donhang')}}" class="item">Đang chờ xác nhận</a>
-  <a href="{{url('donhang?status=danggiaohang')}}" class="item">Đang giao hàng</a>
-  <a href="{{url('donhang?status=dagiaohang')}}" class="item">Đã giao hàng</a>
+    <div id="order_status_menu" class="ui large three item menu">
+    <a href="{{ url('donhang') }}" class="red item {{ request()->query('status') === null ? 'active' : '' }}">Đang chờ xác nhận</a>
+<a href="{{ url('donhang?status=danggiaohang') }}" class="blue item {{ request()->query('status') === 'danggiaohang' ? 'active' : '' }}">Đang giao hàng</a>
+<a href="{{ url('donhang?status=dagiaohang') }}" class="green item {{ request()->query('status') === 'dagiaohang' ? 'active' : '' }}">Đã giao hàng</a>
 </div>
 
 
@@ -48,21 +48,11 @@
   </div>
 @endforeach
 @else
-<h3 style="padding:60px" class="ui center aligned header">Chưa có đơn hàng nào !</h3>
+<h2 style="padding:60px" class="ui center aligned header">Chưa có đơn hàng nào !</h2>
 @endif
 </div>
 
 </div>
 
+<div style="height:150px"></div>
 @include('user.layouts.footer')
-
-<script>
-  var currentUrl = window.location.href;
-var menuItems = document.querySelectorAll('#order_status_menu .item');
-for (var i = 0; i < menuItems.length; i++) {
-  var menuItemUrl = menuItems[i].getAttribute('href');
-  if (currentUrl == menuItemUrl) {
-    menuItems[i].classList.add('active');
-  }
-}
-</script>

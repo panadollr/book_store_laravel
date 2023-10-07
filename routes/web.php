@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 /*
@@ -15,31 +16,25 @@ use App\Http\Controllers\AdminController;
 |
 */
 
-
 //BookController
 Route::get('/', [BookController::class, 'index']);
 Route::get('/dangnhap', [BookController::class, 'login_index'])->name("login");
 Route::post('/xacthucdangnhap', [BookController::class, 'login_authentication']);
 Route::get('/dangky', [BookController::class, 'register_index']);
 Route::post('/xacthucdangky', [BookController::class, 'register_authentication']);
-Route::get('/khosach',  [BookController::class, 'books_index']);
 Route::get('/load_books_by_type/{type}', [BookController::class,'load_books_by_type']);
 Route::get('/chitietsach/{id}', [BookController::class, 'book_details']);
-Route::get('/show_cart', [BookController::class, 'show_cart']);
-Route::post('/save_cart/{book_id}',  [BookController::class, 'save_cart']);
-Route::get('/update_cart_quantity/{id}/{quantity}', [BookController::class,'update_cart_quantity']);
-Route::get('/delete_to_cart/{id}', [BookController::class,'delete_to_cart']);
-Route::get('/timkiem', [BookController::class,'search_index']);
-Route::post('/timkiemsach', [BookController::class,'search_books'])->name('timkiemsach');
+Route::get('/timkiem/{book_title}', [BookController::class,'search_books']);
 Route::post('/giatien', [BookController::class,'giatien']);
 
 //UserController
 Route::middleware('user')->group(function () {
-    Route::get('/dangxuat', [UserController::class,'logout']);
+Route::get('/dangxuat', [UserController::class,'logout']);
 Route::get('/checkout', [UserController::class,'checkout']);
 Route::post('/tienhanhthanhtoan', [UserController::class,'save_checkout']);
-Route::post('/dangbinhluan/{book_id}', [UserController::class,'post_comment']);
+Route::post('/dangbinhluan', [UserController::class,'post_comment']);
 Route::get('/donhang', [UserController::class, 'user_order']);
+Route::get('/get_user_orders_by_status={status}', [UserController::class, 'get_user_orders']);
 Route::get('/xoadonhang/{payment_id}', [UserController::class, 'delete_user_order']);
 Route::get('/cai_dat_tai_khoan', [UserController::class, 'account_settings_index']);
 });
@@ -88,4 +83,11 @@ Route::prefix('admin')->group(function () {
 // Route::post('/update_book/{book_id}', [AdminController::class,'update_book']);
 // Route::get('/thongke', [AdminController::class,'orderByDay']);
 // Route::get('/xoaphanhoi/{comment_id}', [AdminController::class,'delete_reply_comment']);
+
+//CartController
+Route::get('giohang', [CartController::class, 'show_cart']);
+Route::post('add_to_cart', [CartController::class,'add_to_cart']);
+Route::post('update_cart_quantity', [CartController::class,'update_cart_quantity']);
+Route::post('delete_all_carts', [CartController::class,'delete_all_carts']);
+
 

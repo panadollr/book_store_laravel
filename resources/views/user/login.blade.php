@@ -23,17 +23,18 @@
 
 <center class="login-all">
 <div class="ui login segment">
+  
 <form class="ui large form" method="POST" action="{{url('xacthucdangnhap')}}">
 
 @csrf
   <h1 class="ui dividing header">Đăng nhập</h1>
   <div class="field">
     <label>Email</label>
-        <input type="email" name="email" required/>
+        <input type="email" name="email">
       </div>
       <div class="field">
     <label>Mật khẩu</label>
-        <input type="password" name="password" required/>
+        <input type="password" name="password">
       </div>
  <center> <button class="ui large blue button" >Đăng nhập</button>
 <a href="{{url('dangky')}}">Chưa có tài khoản ?</a>
@@ -42,7 +43,7 @@
 </div>
 </center>
 
-
+<br><br><br>
 @include('user.layouts.footer')
 
 @if ($errors->any())

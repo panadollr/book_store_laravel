@@ -12,10 +12,10 @@
 $userSession = Session::get('user');
 @endphp
 
-<div class="ui container" style="margin-top:30px;width: 93%">
+<div class="ui container" style="margin-top:30px;">
 
   <div class="ui two column stackable grid">
-    <div class="column" style="width: 65%">
+    <div class="column" style="width: 60%">
      
     <div class="ui book details segment" id="book_details-segment">
         <h2 class="ui header">{{ $bookdetail->book_title}}</h2>
@@ -50,9 +50,9 @@ $userSession = Session::get('user');
 </div>
       </div>
 
-      <div class="ui book details segment" style="margin-top:25px">
+      <div class="ui book details segment" style="margin-top:25px;">
         <h3 class="ui header">Các sản phẩm khác</h3>
-        <div class="ui blue four link stackable cards">
+        <div class="ui blue three link doubling cards" style="max-width: 100%">
         @foreach($other_books as $book)
           <a href="{{ url('chitietsach/'.$book->id)}}" class="card">
           <div class="image">
@@ -65,97 +65,59 @@ $userSession = Session::get('user');
 
 
     </div>
-    <div class="column" style="width: 35%">
+    <div class="column" style="width: 40%">
      
-    <div class="ui book details segment" id="comments-segment">
-        <h3 class="ui header">Đánh giá sản phẩm</h3>
-        <div id="comments" class="ui comments"  style="max-height: 500px; overflow-y:scroll">
-        @if(count($comments) > 0)
-        @foreach($comments as $comment)
-          <div class="comment">
-            <a class="avatar">
-            <i class="user big outline icon"></i>
-            </a>
-            <div class="content">
-            @foreach($users as $user)
-      @if($user->id == $comment->user_id)
-      <a class="author">{{$user->name}}</a>
-      @endif
-      @endforeach
-              <div class="metadata">
-                <span class="date">{{$comment->comment_date}}</span>
-                @php 
-      $tr=$comment->comment_rating;
-      @endphp
-     @for($count=0;$count<$tr;$count++)
-       <i class="yellow star icon"></i>
-@endfor
-              </div>
-              <div class="text">
-              {{$comment->comment_content}}
-              </div>
-              @foreach($reply_comment as $key =>$com_reply)
-    @if($com_reply->comment_id == $comment->comment_id)
-     <div class="reply-comments comments">
-        <div class="comment">
-          <a class="avatar">
-          <i class="user big outline icon"></i>
-          </a>
-          <div class="content">
-          @foreach($users as $user)
-      @if($user->id == $com_reply->reply_user_id)
-      <a class="author">{{$user->name}}</a>
-      @endif
-      @endforeach
-            <div class="metadata">
-      <span class="date">{{$com_reply->reply_date}}</span>
+    <div class="ui book details segment" id="comments-vue">
+
+<div class="ui center aligned container" v-if="userSession">
+<h3>Bạn đánh giá sản phẩm này bao nhiêu sao ?</h3>
+<div style="padding: 10px;" class="ui massive yellow rating" id="rating"></div>
+<span id="rate_text" style="font-weight: bold;font-size: 18px;"></span>
+<input type="hidden" name="rating" value="0" ref="ratingInput">
+<div style="width: 100%;" class="ui input">
+<textarea style="width: 100%;
+            resize: none;" v-model="newCommentText" @keyup.enter="postComment"></textarea>
       </div>
-            <div class="text">
-              {{$com_reply->reply_comment_content}}
-            </div>
-          </div>
+      <br><br>
+<button class="ui fluid black button" @click="postComment">Đánh giá</button>
+</div>
+
+<div v-else>
+  <h3 class="ui blue center aligned header">Vui lòng đăng nhập để tiếp tục đánh giá sản phẩm</h3>
+</div>
+
+  <div class="ui comments" style="max-height: 500px; overflow-y:scroll">
+  
+    <div v-for="comment in comments" :key="comment.comment_id" class="comment">
+      <a class="avatar">
+      <i class="user big outline icon"></i>
+      </a>
+      <div class="content">
+    
+<a class="author">@{{ comment.name }}</a>
+
+        <div class="metadata">
+          <span class="date">@{{ comment.comment_date }}</span>
+ <i v-for="n in parseInt(comment.comment_rating)" :key="n" class="yellow star icon"></i>
+        </div>
+        <div class="text">
+        @{{comment.comment_content}}
         </div>
       </div>
-      @endif
-      @endforeach
-            </div>
-          </div>
-          @endforeach
-          @else
-        <h3 id="no_comments_text">Chưa có bình luận nào...</h3>
-        @endif
-        </div>
-
-        @if($userSession)
-        <form id="commentForm" class="ui form">
-  @csrf
-  <div class="field" id="comm">
-    <h4>Bạn đánh giá sản phẩm này bao nhiêu sao ?</h4>
-    <div style="background:white; padding: 7px;border-radius:20px" class="ui massive yellow rating"></div>
-    <span id="rate_text" style="font-weight: bold;font-size: 18px;"></span>
-    <input type="hidden" name="rating" value="1">
-    <input type="hidden" name="user_name" value="{{$userSession->name}}">
-    <br><br>
-    <textarea style="width: 100%;
-            height: 0;
-            resize: none;" name="comment_content" style="margin-top: 5px;" class="comment_content" required></textarea>
-  </div>
-  <center>
-    <button type="submit" class="ui blue right labeled submit icon button send-comment">
-      <i class="icon edit"></i> Bình luận
-    </button>
-  </center>
-</form>
-@else
-<h3 class="ui blue center aligned header">Bạn cần đăng nhập để bình luận</h3>
-@endif
-
     </div>
+    
+  </div>
+
+  <h3 class="ui center aligned header" v-if="comments.length == 0" id="no_comments_text">Chưa có bình luận nào...</h3>
+</div>
+
   </div>
 
         
 
       </div>
+
+      
 
 </div>
 
@@ -166,7 +128,9 @@ $userSession = Session::get('user');
     e.preventDefault();
 
     const quantity = document.querySelector('#addToCartForm input[name="quantity"]').value;
-    addToCart('{{ $bookdetail->id }}', quantity);
+    var data = [ {name: "book_id", data: '{{ $bookdetail->id }}'},
+  {name: "quantity", data: quantity} ]
+    addToCart('{{URL::to('add_to_cart')}}', data);
     
     $('#book_details-segment').css({'transition':'0.5s'})
     .css({'transform':' translateY(-100%) scale(0.05)'})
@@ -180,74 +144,48 @@ setTimeout(()=>{
   $('#book_details-segment').css({'transition':'0.5s'}).css({'transform':' translateY(0) translateX(0)'})
   .css({'opacity':'1'})
 },600)
-
   });
 
+new Vue({
+  el: '#comments-vue',
+  data: {
+    comments: @json($comments),
+    users: @json($users),
+    newCommentText: '',
+    userSession: @json($userSession)
+  },
+  methods: {
+    postComment(){
 
-  document.getElementById('commentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Retrieve form data
-    const commentContentTextarea = document.querySelector('#commentForm textarea[name="comment_content"]');
-    const ratingInput = document.querySelector('#commentForm input[name="rating"]')
-    const rating = ratingInput.value;
-    const commentContent = commentContentTextarea.value;
-    const userName = document.querySelector('#commentForm input[name="user_name"]').value;
-
-    // Perform AJAX request
-    fetch('{{URL::to('/dangbinhluan/'.$bookdetail->id)}}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({
-        rating: rating,
-        comment_content: commentContent
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      // Handle response from the server
-      const commentDate = data.comment_date;
-      let stars = '';
-for (let i = 0; i < rating; i++) {
-    stars += '<i class="yellow star icon"></i>';
-}
-const commentsElement = document.getElementById('comments');
-      const html = `<div class="comment">
-    <a class="avatar">
-    <i class="user big outline icon"></i>
-    </a>
-    <div class="content">
-      <a class="author">${userName}</a>
-      <div class="metadata">
-      <span class="date">${commentDate}</span>
-      ${stars}
-      
-      </div>
-      <div class="text">
-        <p>${commentContent}</p>
-      </div>
-    </div>
- </div>`
-      commentsElement.insertAdjacentHTML('afterbegin', html);
-      document.getElementById('comments-segment').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      commentContentTextarea.value = ''
-      var noCommentsDiv = document.getElementById('no_comments_text');
-if (noCommentsDiv) {
-  noCommentsDiv.style.display = "none";
-}
-      $('.ui.rating')
+      const ratingInputValue = this.$refs.ratingInput.value;
+      if (this.newCommentText.trim() !== '' && ratingInputValue != 0) {
+        const newComment = {
+          comment_content: this.newCommentText,
+          comment_rating: ratingInputValue,
+        };
+        var url = "{{URL::to('dangbinhluan')}}";
+        const data = [ {name: 'book_id', data: '{{ $bookdetail->id }}'},
+        {name: 'comment_content', data: newComment.comment_content},
+        {name: 'comment_rating', data: newComment.comment_rating},
+        {name: 'user_id', data: this.userSession.id}]
+        fetchPOST(url, data).then(data => {
+          successAlert(data.alert)
+          newComment.name = this.userSession.name
+          newComment.comment_date = data.newComment.comment_date
+          this.comments.unshift(newComment);
+        this.newCommentText = ''; 
+        $('.ui.rating')
   .rating('clear rating', true);
-      successAlert("Đăng bình luận thành công !");
-    })
-    .catch(error => {
-      errorAlert("Lỗi, đăng bình luận không thành công !");
-    });
-  });
+        })
+      } else {
+        errorAlert("Bình luận và số sao không được để trống")
+      }
 
-  $('.rating').rating({
+    }
+  }
+})
+
+$('.rating').rating({
     initialRating: 0,
     maxRating: 5
   });
@@ -255,10 +193,12 @@ if (noCommentsDiv) {
   const rateTextArr = ['Rất tệ', 'Tệ', 'Ổn', 'Tốt', 'Rất tốt'];
   for (let i = 1; i <= $('.rating').children().length; i++) {
     $('.rating i:nth-child(' + i + ')').click(function() {
-      $("#comm input[name*='rating']").val(i);
+      $("#comments-vue input[name*='rating']").val(i);
       $('#rate_text').text(rateTextArr[i - 1]);
     });
   }
+
+
 
 </script>
 

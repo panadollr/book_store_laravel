@@ -22,7 +22,6 @@
     }
 
     .masthead.segment {
-     
       padding: 1em 0em;
     }
     .masthead .logo.item img {
@@ -122,11 +121,10 @@
 
 <!-- Sidebar Menu -->
 <div class="ui header vertical inverted sidebar menu">
-  <a class="item" href="{{url('/')}}">Trang chủ</a>
-  <a class="item" href="{{url('/khosach')}}">Kho sách</a>
-  <a class="item" href="{{url('/show_cart')}}">Giỏ hàng</a>
-  <a class="item" href="{{url('/dangnhap')}}">Đăng nhập</a>
-  <a class="item" href="{{url('/dangky')}}">Đăng ký</a>
+  <a class="item {{ request()->is('/') ? 'active' : '' }}" href="{{url('/')}}">Trang chủ</a>
+  <a class="item {{ request()->is('giohang') ? 'active' : '' }}" href="{{url('giohang')}}">Giỏ hàng</a>
+  <a class="item {{ request()->is('dangnhap') ? 'active' : '' }}" href="{{url('dangnhap')}}">Đăng nhập</a>
+  <a class="item {{ request()->is('dangky') ? 'active' : '' }}" href="{{url('dangky')}}">Đăng ký</a>
 </div>
 
 
@@ -136,13 +134,12 @@
   background-position: center;" class="ui inverted vertical masthead center aligned segment">
 
     <div class="ui container">
-      <div class="ui header large secondary inverted pointing menu">
+      <div class="ui header large secondary inverted pointing menu" style="margin-top: -10px">
         <a class="toc item">
           <i class="sidebar icon"></i>
         </a>
-        <a class="item" href="{{ url('/') }}">Trang chủ</a>
-  <a class="item" href="{{url('/khosach')}}">Kho sách</a>
-  <a class="item" href="{{url('/show_cart')}}" id="giohang" data-html="@php $carts=Session::get('cart') @endphp
+        <a class="item {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Trang chủ</a>
+  <a class="item {{ request()->is('giohang') ? 'active' : '' }}" href="{{url('giohang')}}" id="giohang" data-inverted="" data-tooltip="@php $carts=Session::get('cart') @endphp
             @if($carts)
               <table style='width:400px' class='ui celled table' >
   <thead >
@@ -164,41 +161,26 @@
               @if($carts) {{count($carts)}} @else 0 @endif </div>
             </a>       
 
-<a href="{{url('timkiem')}}" class="item">Tìm kiếm</a>
-
-<div class="ui category search item">
-    <div class="ui icon input">
-      <input id="search_input" class="prompt" type="text" placeholder="Search animals...">
-      <i class="search link icon"></i>
-    </div>
-    <div class="results" style="width: 300px">
-    </div>
+<div class="ui search item">
+  <div class="ui icon input">
+    <input class="prompt" type="text" placeholder="Tìm kiếm theo tên sách">
+    <i class="search icon"></i>
   </div>
-
-<!-- <div class="ui search item">
-      <div class="ui icon input">
-      @csrf 
-        <input id="search_input" type="text" placeholder="Tìm kiếm...">
-        <i class="search link icon"></i>
-      </div>
-      <div class="results">
-      <div id="search_results" class="ui items" style="padding: 20px;"></div>
-      </div>
-    </div> -->
+  <div class="results"></div>
+</div>
 
         <div class="right item">
         @php $user = Session::get('user'); @endphp
                        @if($user)
                             
 
-<div class="ui small compact menu" >
+<div class="ui small compact menu" style="transform: translateY(5px)">
   <div class="ui simple inline dropdown item" style="color: black;font-size: 1.8ch;font-weight: bold;">
     <i class="user icon"></i>
       {{ $user->name }}                              
     <i class="dropdown icon"></i>
     <div class="menu" >
        <a class="item"  href="{{url('/donhang')}}">Đơn hàng của bạn</a>
-      <a class="item" href="{{url('cai_dat_tai_khoan')}}">Cài đặt tài khoản</a>
      <a class="item"  href="{{url('dangxuat')}}"> Đăng xuất</a>
     </div>
   </div>
@@ -212,65 +194,16 @@
       </div>
     </div>
 
-    <div id="search_results" class="ui six doubling link cards" style="padding: 10px;transition: 0.5s; display: none"></div>
-
-
     <div class="ui text container">
-      <h1 class="ui inverted header">
+      <br>
+      <h1 class="ui inverted header" style="font-size:35px">
         Cửa hàng kinh doanh sách online
       </h1>
-      <h2>Tri thức cho lập trình viên</h2>
     </div>
-
+<br><br>
 
   </div>
 
 
 </html>
 
-
-<script>
-      document.getElementById('search_input').addEventListener('input', function() {
-  var query = this.value;
-  searchBook(query)
-});
-
-function searchBook(query){
-  var result = document.getElementById('search_results');
-    fetch("{{route('timkiemsach')}}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({ query })
-    })
-      .then(response => response.json())
-      .then(data => {
-        result.style.height = "auto"
-        let html = ``
-        data.forEach(book => {
-        html += ` <div class="card">
-    <div class="image">
-      <img src="${book.book_image}">
-    </div>
-    <div class="content">
-      <h1 class="header">${book.book_title}</h1>
-      <div class="meta">
-        <h3>${(book.book_price).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h3>
-      </div>
-      <div class="extra">
-      ${(book.book_author)}
-      </div>
-      <a href="{{url('chitietsach/${book.id}')}}" class="ui blue button">Xem chi tiết</a>
-    </div>
-  </div>`
-        });
-        html += ``;        
-        result.innerHTML = html;
-      }).catch(error => {
-        result.innerHTML = '';
-        result.style.height = "0"
-    });;
-}
-    </script>

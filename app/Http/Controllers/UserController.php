@@ -25,7 +25,7 @@ class UserController extends Controller
     {
      $carts = Session::get('cart');
      if($carts){
-        return view('user.checkout.checkout',compact('carts'));
+        return view('user.checkout',compact('carts'));
      }else {
        return redirect('/');
      }
@@ -92,61 +92,84 @@ $payment_data=array();
 Session::put('cart',null); 
          return Redirect('/donhang')->with('success', 'Cảm ơn bạn đã mua hàng !'); 
     }
-   
 
-    public function update_user(Request $request,$id){
-         $data=array();
-         $data['name']=$request->name;
-         $data['email']=$request->email;
-         DB::table('users')->where('id',$id)->update($data);
-         return Redirect::back()->withErrors(['msg' => 'Đã cập nhật thông tin tài khoản']);
-    }
 
-   public function change_pass(Request $request,$id){
-    $data=array();
-        $data['password']=bcrypt($request->new_pass);
-       DB::table('users')->where('id',$id)->update($data);
+//    public function user_order(Request $request){
+//     $user = Session::get('user');
+//     $status = $request->input('status');
+//     $user_orders_table = Order::join('tbl_shipping','tbl_order.order_id','=','tbl_shipping.order_id')
+//     ->where('user_id',$user->id);
+//     if($status == 'danggiaohang'){
+//         $user_orders = $user_orders_table
+//         ->where('order_status', 'Đang giao hàng')->get();
+//     } else if($status == 'dagiaohang'){
+//         $user_orders = $user_orders_table
+//         ->where('order_status', 'Đã giao hàng')->get();
+//     } else {
+//         $user_orders = $user_orders_table
+//         ->where('order_status', 'Đang chờ xác nhận')->get();
+//     }
+//     $order_details = OrderDetails::join('books', 'tbl_order_details.product_id', '=', 'books.id')
+//     ->get();
+//     return view('user.user_order',compact('user','user_orders', 'order_details'));
+//   }
 
- return Redirect::back()->withErrors(['msg' => 'Đã cập nhật mật khẩu tài khoản']);
-
-   }
-
-   public function user_order(Request $request){
+public function user_order(Request $request){
     $user = Session::get('user');
     $status = $request->input('status');
     $user_orders_table = Order::join('tbl_shipping','tbl_order.order_id','=','tbl_shipping.order_id')
     ->where('user_id',$user->id);
     if($status == 'danggiaohang'){
-        $user_orders = $user_orders_table
-        ->where('order_status', 'Đang giao hàng')->get();
+        $user_orders_table
+        ->where('order_status', 'Đang giao hàng');
     } else if($status == 'dagiaohang'){
-        $user_orders = $user_orders_table
-        ->where('order_status', 'Đã giao hàng')->get();
+       $user_orders_table
+        ->where('order_status', 'Đã giao hàng');
     } else {
-        $user_orders = $user_orders_table
-        ->where('order_status', 'Đang chờ xác nhận')->get();
+        $user_orders_table
+        ->where('order_status', 'Đang chờ xác nhận');
     }
+    $user_orders = $user_orders_table->get();
     $order_details = OrderDetails::join('books', 'tbl_order_details.product_id', '=', 'books.id')
     ->get();
-    return view('user.user_order',compact('user','user_orders', 'order_details'));
+    return view('user.user_order_test',compact('user','user_orders', 'order_details'));
   }
 
-     public function delete_user_order($payment_id){
-        DB::table('tbl_payment')->where('payment_id', $payment_id)->delete();
+  public function get_user_orders($status){
+    $user = Session::get('user');
+    $user_orders_table = Order::join('tbl_shipping','tbl_order.order_id','=','tbl_shipping.order_id')
+    ->where('user_id',$user->id);
+    if($status == 'dang_cho_xac_nhan'){
+        $user_orders_table->where('order_status', 'Đang chờ xác nhận');
+    } else if($status == 'dang_giao_hang'){
+       $user_orders_table->where('order_status', 'Đang giao hàng');
+    } else {
+        $user_orders_table->where('order_status', 'Đã giao hàng');
+    }
+    $user_orders = $user_orders_table->get();
+    $order_details = OrderDetails::join('books', 'tbl_order_details.product_id', '=', 'books.id')
+    ->get();
+    return response()->json(['user_orders' => $user_orders, 'order_details' => $order_details]);
+  }
+
+     public function delete_user_order($order_id){
+        DB::table('tbl_order')->where('order_id', $order_id)->delete();
+        //DB::table('tbl_payment')->where('payment_id', $payment_id)->delete();
     return redirect('/donhang')->with('success','Hủy đơn hàng thành công !');
      }
      
 
-    public function post_comment(Request $request,$book_id){
-        $userSession = Session::get('user');
+    public function post_comment(Request $request){
         $data['book_id']=$request->book_id;
-        $data['user_id']=$userSession->id;
+        $data['user_id']=$request->user_id;
           $data['comment_content']=$request->comment_content;   
-            $data['comment_rating']=$request->rating;
+            $data['comment_rating']=$request->comment_rating;
     $comment_id = Comment::insertGetId($data);
-    $comment = Comment::where('comment_id','=',$comment_id)->first();
+    $newComment = Comment::where('comment_id', $comment_id)
+    ->select('comment_date')
+    ->first();
 
-    return response()->json($comment);
+    return response()->json(['alert' => 'Đăng bình luận thành công', 'newComment' => $newComment]);
     }
 
     public function account_settings_index(){
